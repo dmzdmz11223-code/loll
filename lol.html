@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D LOL Fullscreen DVD</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #05070a;
+      font-family: 'Courier New', Courier, monospace;
+      cursor: pointer;
+    }
+
+    body.is-fullscreen {
+      cursor: none;
+    }
+
+    #dvd-lol {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      color: #00e5ff;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: bold;
+      white-space: pre;
+      text-shadow: 0 0 10px #00e5ff, 0 0 25px #0077ff;
+      will-change: transform;
+    }
+  </style>
+</head>
+<body>
+
+  <pre id="dvd-lol">██╗      ██████╗ ██╗     
+██║     ██╔═══██╗██║     
+██║     ██║   ██║██║     
+██║     ██║   ██║██║     
+███████╗╚██████╔╝███████╗
+╚══════╝ ╚═════╝ ╚══════╝</pre>
+
+  <script>
+    const lol = document.getElementById('dvd-lol');
+
+    const colors = [
+      '#00e5ff',
+      '#ff007f',
+      '#39ff14',
+      '#ffea00',
+      '#b026ff',
+      '#ff5e00'
+    ];
+    let colorIndex = 0;
+
+    let x = 50;
+    let y = 50;
+    let vx = 4;
+    let vy = 4;
+
+    function changeColor() {
+      colorIndex = (colorIndex + 1) % colors.length;
+      const newColor = colors[colorIndex];
+      lol.style.color = newColor;
+      lol.style.textShadow = `0 0 10px ${newColor}, 0 0 25px ${newColor}`;
+    }
+
+    function animate() {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const rect = lol.getBoundingClientRect();
+
+      x += vx;
+      y += vy;
+
+      let hitWall = false;
+
+      if (x + rect.width >= screenWidth) {
+        x = screenWidth - rect.width;
+        vx = -vx;
+        hitWall = true;
+      } else if (x <= 0) {
+        x = 0;
+        vx = -vx;
+        hitWall = true;
+      }
+
+      if (y + rect.height >= screenHeight) {
+        y = screenHeight - rect.height;
+        vy = -vy;
+        hitWall = true;
+      } else if (y <= 0) {
+        y = 0;
+        vy = -vy;
+        hitWall = true;
+      }
+
+      if (hitWall) {
+        changeColor();
+      }
+
+      lol.style.transform = `translate(${x}px, ${y}px)`;
+      requestAnimationFrame(animate);
+    }
+
+    function triggerFullscreen() {
+      const el = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const request = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+        if (request) {
+          request.call(el).then(() => {
+            document.body.classList.add('is-fullscreen');
+          }).catch(() => {});
+        }
+      }
+    }
+
+    // Attempt fullscreen on load
+    window.addEventListener('load', triggerFullscreen);
+
+    // Trigger fullscreen on ANY keyboard button press, mouse click, or screen tap
+    ['keydown', 'keyup', 'click', 'mousedown', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, triggerFullscreen);
+    });
+
+    // Update cursor visibility when entering or exiting fullscreen
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        document.body.classList.add('is-fullscreen');
+      } else {
+        document.body.classList.remove('is-fullscreen');
+      }
+    });
+
+    animate();
+  </script>
+</body>
+</html>
